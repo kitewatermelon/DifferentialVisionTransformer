@@ -4,7 +4,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 import hydra
-from omegaconf import DictConfig
+from hydra.utils import get_original_cwd
+from omegaconf import DictConfig, OmegaConf
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping, LearningRateMonitor
@@ -30,12 +31,25 @@ def train(cfg: DictConfig) -> None:
         log_model=False,
     )
 
+    ckpt_dir = (
+        Path(get_original_cwd())
+        / "outputs"
+        / "checkpoints"
+        / cfg.dataset.name
+        / cfg.model.name
+        / f"lr{cfg.trainer.lr}_bs{cfg.dataset.batch_size}_ep{cfg.trainer.max_epochs}"
+        #  / wandb_logger.version
+    )
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+    OmegaConf.save(cfg, ckpt_dir / "config.yaml")
+
     callbacks = [
         ModelCheckpoint(
+            dirpath=ckpt_dir,
             monitor="val/f1",
             mode="max",
             save_top_k=1,
-            filename="best-f1-{epoch:02d}-{val/f1:.4f}",
+            filename="best",
             save_last=True,
         ),
         EarlyStopping(

@@ -1,3 +1,4 @@
+name: pathmnist
 image_size: 224
 batch_size: 128
 num_workers: 4
