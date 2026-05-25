@@ -55,6 +55,16 @@ def get_a6d6(name='vit_tiny_patch16_224'):
     model = replace_attention_with_diff(model=model, start_idx=6)
     return model
 
+def get_odd_diff_vit(name='vit_tiny_patch16_224'):
+    model = timm.create_model(name, pretrained=False)
+    model = replace_attention_with_diff(model, replace_indices={0, 2, 4, 6, 8, 10})
+    return model
+
+def get_even_diff_vit(name='vit_tiny_patch16_224'):
+    model = timm.create_model(name, pretrained=False)
+    model = replace_attention_with_diff(model, replace_indices={1, 3, 5, 7, 9, 11})
+    return model
+
 if __name__=="__main__":
     # print(get_diff_vit(name='vit_tiny_patch16_224'))
-    print(get_a6d6(name='vit_tiny_patch16_224'))
+    print(get_odd_diff_vit(name='vit_tiny_patch16_224'))
