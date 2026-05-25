@@ -1,3 +1,4 @@
 image_size: 224
 batch_size: 128
 num_workers: 4
+data_root: data  # relative to cwd; medmnist will look for pathmnist_224.npz here

@@ -2,3 +2,6 @@ max_epochs: 100
 lr: 1.0e-4
 accelerator: gpu
 precision: 16-mixed
+warmup_epochs: 5
+gradient_clip_val: 1.0
+early_stopping_patience: 15
