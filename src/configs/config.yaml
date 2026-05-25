@@ -1,0 +1,8 @@
+defaults:
+  - model: vit
+  - dataset: pathmnist
+  - trainer: default
+  - wandb: default
+  - _self_
+
+seed: 42

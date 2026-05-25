@@ -1,0 +1,3 @@
+name: diff_vit
+backbone: vit_tiny_patch16_224
+num_classes: 9

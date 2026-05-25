@@ -1,0 +1,4 @@
+project: DifferentialVisionTransformer
+entity: kitewatermelon
+tags: []
+name: ${model.name}-run
