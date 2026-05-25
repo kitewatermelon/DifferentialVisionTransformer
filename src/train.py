@@ -71,7 +71,7 @@ def train(cfg: DictConfig) -> None:
     )
 
     trainer.fit(module, dm)
-    trainer.test(module, dm, ckpt_path="best")
+    trainer.test(module, dm, ckpt_path="best", weights_only=False)
 
 
 if __name__ == "__main__":

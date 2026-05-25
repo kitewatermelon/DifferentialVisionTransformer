@@ -4,9 +4,7 @@ import pytorch_lightning as pl
 from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR, SequentialLR
 from torchmetrics.functional import accuracy, precision, recall, f1_score, auroc
 import wandb
-import matplotlib.pyplot as plt
-import numpy as np
-from sklearn.metrics import confusion_matrix
+from utils.metrics import plot_confusion_matrix
 
 
 class VitLitModule(pl.LightningModule):
@@ -86,21 +84,9 @@ class VitLitModule(pl.LightningModule):
         self._test_preds.clear()
         self._test_targets.clear()
 
-        cm = confusion_matrix(targets, preds, labels=list(range(self.num_classes)))
-        fig, ax = plt.subplots(figsize=(8, 7))
-        im = ax.imshow(cm, interpolation="nearest", cmap="Blues")
-        fig.colorbar(im, ax=ax)
-        ticks = np.arange(self.num_classes)
-        ax.set(xticks=ticks, yticks=ticks,
-               xlabel="Predicted", ylabel="True",
-               title="Confusion Matrix (test)")
-        for i in range(self.num_classes):
-            for j in range(self.num_classes):
-                ax.text(j, i, str(cm[i, j]), ha="center", va="center",
-                        color="white" if cm[i, j] > cm.max() / 2 else "black")
-        plt.tight_layout()
-        self.logger.experiment.log({"test/confusion_matrix": wandb.Image(fig)})
-        plt.close(fig)
+        fig = plot_confusion_matrix(preds, targets, self.num_classes)
+        if self.logger is not None:
+            self.logger.experiment.log({"test/confusion_matrix": wandb.Image(fig)})
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
