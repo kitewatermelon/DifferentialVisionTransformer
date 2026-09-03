@@ -1,4 +1,4 @@
-project: DifferentialVisionTransformer
+project: A6D6
 entity: DiffViT
 tags: []
 name: ${dataset.name}_${model.name}_seed${seed}
