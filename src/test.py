@@ -11,7 +11,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 
 from model.builder import build_model
-from dataset.medmnist import PathMNISTDataModule
+from dataset.medmnist import MedMNISTDataModule
 from lightning_module import VitLitModule
 from utils.vis_attn import log_attn_maps
 
@@ -33,7 +33,7 @@ def test(cfg: DictConfig) -> None:
 
     saved_cfg = OmegaConf.load(ckpt_dir / "config.yaml")
     model = build_model(saved_cfg.model)
-    dm = PathMNISTDataModule(saved_cfg)
+    dm = MedMNISTDataModule(saved_cfg)
 
     ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     module = VitLitModule(model=model, cfg=saved_cfg)

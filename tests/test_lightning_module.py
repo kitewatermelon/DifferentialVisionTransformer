@@ -7,7 +7,12 @@ from omegaconf import OmegaConf
 def cfg():
     return OmegaConf.create({
         "model": {"name": "vit", "backbone": "vit_tiny_patch16_224", "num_classes": 9},
-        "trainer": {"lr": 1e-4, "max_epochs": 100},
+        "trainer": {
+            "lr": 1e-4,
+            "weight_decay": 0.05,
+            "max_epochs": 100,
+            "warmup_epochs": 5,
+        },
     })
 
 

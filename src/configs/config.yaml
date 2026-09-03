@@ -6,3 +6,10 @@ defaults:
   - _self_
 
 seed: 42
+
+model:
+  num_classes: ${dataset.num_classes}
+
+hydra:
+  job:
+    chdir: false

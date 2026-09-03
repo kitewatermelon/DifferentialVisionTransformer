@@ -1,5 +1,7 @@
-max_epochs: 100
+max_epochs: 300
+min_epochs: 40
 lr: 1.0e-4
+weight_decay: 0.05
 accelerator: gpu
 precision: 16-mixed
 warmup_epochs: 5

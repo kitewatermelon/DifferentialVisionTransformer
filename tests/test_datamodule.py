@@ -6,6 +6,7 @@ from omegaconf import OmegaConf
 def cfg():
     return OmegaConf.create({
         "dataset": {
+            "name": "pathmnist",
             "image_size": 224,
             "batch_size": 4,
             "num_workers": 0,
@@ -14,8 +15,8 @@ def cfg():
 
 
 def test_datamodule_instantiates(cfg):
-    from dataset.medmnist import PathMNISTDataModule
-    dm = PathMNISTDataModule(cfg)
+    from dataset.medmnist import MedMNISTDataModule
+    dm = MedMNISTDataModule(cfg)
     assert dm.batch_size == 4
     assert dm.image_size == 224
     assert dm.num_workers == 0
@@ -24,8 +25,8 @@ def test_datamodule_instantiates(cfg):
 @pytest.mark.slow
 def test_datamodule_dataloaders_shape(cfg):
     import torch
-    from dataset.medmnist import PathMNISTDataModule
-    dm = PathMNISTDataModule(cfg)
+    from dataset.medmnist import MedMNISTDataModule
+    dm = MedMNISTDataModule(cfg)
     dm.setup()
     x, y = next(iter(dm.train_dataloader()))
     assert x.shape == (4, 3, 224, 224)

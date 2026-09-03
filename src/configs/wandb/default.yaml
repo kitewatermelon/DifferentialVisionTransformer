@@ -1,4 +1,4 @@
 project: DifferentialVisionTransformer
 entity: DiffViT
 tags: []
-name: ${model.name}-run
+name: ${dataset.name}_${model.name}_seed${seed}

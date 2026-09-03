@@ -12,8 +12,9 @@ class VitLitModule(pl.LightningModule):
         super().__init__()
         self.model = model
         self.lr = cfg.trainer.lr
+        self.weight_decay = getattr(cfg.trainer, 'weight_decay', 0.05)
         self.max_epochs = cfg.trainer.max_epochs
-        self.warmup_epochs = cfg.trainer.warmup_epochs
+        self.warmup_epochs = getattr(cfg.trainer, 'warmup_epochs', 5)
         self.num_classes = cfg.model.num_classes
         self.loss_fn = nn.CrossEntropyLoss()
         self.save_hyperparameters(ignore=["model"])
@@ -36,42 +37,42 @@ class VitLitModule(pl.LightningModule):
         kwargs_micro = dict(task="multiclass", num_classes=self.num_classes, average="micro")
 
         acc    = accuracy( preds, y, **kwargs_micro)
+        bacc   = accuracy( preds, y, **kwargs_macro)  # balanced accuracy
         prec   = precision(preds, y, **kwargs_macro)
-        rec    = recall(   preds, y, **kwargs_macro)
         f1     = f1_score( preds, y, **kwargs_macro)
         auc    = auroc(    probs, y, **kwargs_macro)
 
-        return loss, acc, prec, rec, f1, auc, preds, y
+        return loss, acc, bacc, prec, f1, auc, preds, y
 
     def training_step(self, batch, batch_idx):
-        loss, acc, prec, rec, f1, auc, _, _ = self._shared_step(batch)
+        loss, acc, bacc, prec, f1, auc, _, _ = self._shared_step(batch)
         self.log_dict({
             "train/loss": loss,
             "train/acc":  acc,
+            "train/bacc": bacc,
             "train/prec": prec,
-            "train/rec":  rec,
             "train/f1":   f1,
             "train/auc":  auc,
         }, on_step=True, on_epoch=True, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, acc, prec, rec, f1, auc, _, _ = self._shared_step(batch)
+        loss, acc, bacc, prec, f1, auc, _, _ = self._shared_step(batch)
         self.log_dict({
             "val/loss": loss,
             "val/acc":  acc,
+            "val/bacc": bacc,
             "val/prec": prec,
-            "val/rec":  rec,
             "val/f1":   f1,
             "val/auc":  auc,
         }, prog_bar=True, sync_dist=True)
 
     def test_step(self, batch, batch_idx):
-        _, acc, prec, rec, f1, auc, preds, targets = self._shared_step(batch)
+        _, acc, bacc, prec, f1, auc, preds, targets = self._shared_step(batch)
         self.log_dict({
             "test/acc":  acc,
+            "test/bacc": bacc,
             "test/prec": prec,
-            "test/rec":  rec,
             "test/f1":   f1,
             "test/auc":  auc,
         }, sync_dist=True)
@@ -89,7 +90,9 @@ class VitLitModule(pl.LightningModule):
             self.logger.experiment.log({"test/confusion_matrix": wandb.Image(fig)})
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.AdamW(
+            self.parameters(), lr=self.lr, weight_decay=self.weight_decay,
+        )
 
         warmup = LinearLR(
             optimizer,

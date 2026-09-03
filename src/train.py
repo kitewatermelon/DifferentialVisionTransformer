@@ -11,7 +11,7 @@ from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping, LearningRateMonitor
 
 from model.builder import build_model
-from dataset.medmnist import PathMNISTDataModule
+from dataset.medmnist import MedMNISTDataModule
 from lightning_module import VitLitModule
 
 
@@ -20,7 +20,7 @@ def train(cfg: DictConfig) -> None:
     pl.seed_everything(cfg.seed, workers=True)
 
     model = build_model(cfg.model)
-    dm = PathMNISTDataModule(cfg)
+    dm = MedMNISTDataModule(cfg)
     module = VitLitModule(model, cfg)
 
     wandb_logger = WandbLogger(
@@ -38,7 +38,6 @@ def train(cfg: DictConfig) -> None:
         / cfg.dataset.name
         / cfg.model.name
         / f"lr{cfg.trainer.lr}_bs{cfg.dataset.batch_size}_ep{cfg.trainer.max_epochs}"
-        #  / wandb_logger.version
     )
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     OmegaConf.save(cfg, ckpt_dir / "config.yaml")
@@ -46,14 +45,14 @@ def train(cfg: DictConfig) -> None:
     callbacks = [
         ModelCheckpoint(
             dirpath=ckpt_dir,
-            monitor="val/f1",
+            monitor="val/bacc",
             mode="max",
             save_top_k=1,
             filename="best",
             save_last=True,
         ),
         EarlyStopping(
-            monitor="val/f1",
+            monitor="val/bacc",
             mode="max",
             patience=cfg.trainer.early_stopping_patience,
         ),
@@ -62,6 +61,7 @@ def train(cfg: DictConfig) -> None:
 
     trainer = pl.Trainer(
         max_epochs=cfg.trainer.max_epochs,
+        min_epochs=cfg.trainer.min_epochs,
         accelerator=cfg.trainer.accelerator,
         precision=cfg.trainer.precision,
         gradient_clip_val=cfg.trainer.gradient_clip_val,
@@ -71,7 +71,7 @@ def train(cfg: DictConfig) -> None:
     )
 
     trainer.fit(module, dm)
-    trainer.test(module, dm, ckpt_path="best", weights_only=False)
+    trainer.test(module, dm, ckpt_path="best")
 
 
 if __name__ == "__main__":
