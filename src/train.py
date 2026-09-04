@@ -12,6 +12,8 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping, Learning
 
 from model.builder import build_model
 from dataset.medmnist import MedMNISTDataModule
+from dataset.idrid import IDRiDDataModule
+from dataset.eyepacs import EyePACSDataModule
 from lightning_module import VitLitModule
 
 
@@ -20,7 +22,8 @@ def train(cfg: DictConfig) -> None:
     pl.seed_everything(cfg.seed, workers=True)
 
     model = build_model(cfg.model)
-    dm = MedMNISTDataModule(cfg)
+    _DM = {"idrid": IDRiDDataModule, "eyepacs": EyePACSDataModule}
+    dm = _DM.get(cfg.dataset.name, MedMNISTDataModule)(cfg)
     module = VitLitModule(model, cfg)
 
     wandb_logger = WandbLogger(

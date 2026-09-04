@@ -1,0 +1,4 @@
+name: vit
+backbone: vit_tiny_patch16_224
+patch_size: 16
+img_size: 512

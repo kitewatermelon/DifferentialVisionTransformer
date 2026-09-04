@@ -27,7 +27,7 @@ class VitLitModule(pl.LightningModule):
 
     def _shared_step(self, batch):
         x, y = batch
-        y = y.squeeze(1).long()
+        y = y.squeeze().long()
         logits = self(x)
         loss = self.loss_fn(logits, y)
         probs = logits.softmax(dim=1)
