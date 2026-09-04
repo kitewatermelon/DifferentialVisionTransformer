@@ -89,6 +89,11 @@ class EyePACSDataModule(pl.LightningDataModule):
             T.Normalize(mean, std),
         ])
 
+        # Inverse-frequency class weights from training split
+        train_labels = labels[train_idx]
+        counts = torch.bincount(train_labels, minlength=5).float()
+        self.class_weights = (1.0 / counts) * counts.sum() / len(counts)
+
         self.train_ds = EyePACSDataset(
             [paths[i] for i in train_idx], labels[train_idx], train_transform,
         )

@@ -8,7 +8,7 @@ from utils.metrics import plot_confusion_matrix
 
 
 class VitLitModule(pl.LightningModule):
-    def __init__(self, model: nn.Module, cfg):
+    def __init__(self, model: nn.Module, cfg, class_weights=None):
         super().__init__()
         self.model = model
         self.lr = cfg.trainer.lr
@@ -16,7 +16,11 @@ class VitLitModule(pl.LightningModule):
         self.max_epochs = cfg.trainer.max_epochs
         self.warmup_epochs = getattr(cfg.trainer, 'warmup_epochs', 5)
         self.num_classes = cfg.model.num_classes
-        self.loss_fn = nn.CrossEntropyLoss()
+        if class_weights is not None:
+            self.register_buffer("class_weights", class_weights)
+            self.loss_fn = nn.CrossEntropyLoss(weight=class_weights)
+        else:
+            self.loss_fn = nn.CrossEntropyLoss()
         self.save_hyperparameters(ignore=["model"])
 
         self._test_preds = []

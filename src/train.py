@@ -24,7 +24,9 @@ def train(cfg: DictConfig) -> None:
     model = build_model(cfg.model)
     _DM = {"idrid": IDRiDDataModule, "eyepacs": EyePACSDataModule}
     dm = _DM.get(cfg.dataset.name, MedMNISTDataModule)(cfg)
-    module = VitLitModule(model, cfg)
+    dm.setup()
+    class_weights = getattr(dm, "class_weights", None)
+    module = VitLitModule(model, cfg, class_weights=class_weights)
 
     wandb_logger = WandbLogger(
         project=cfg.wandb.project,
